@@ -1,0 +1,80 @@
+{include file="system@block/layui" /}
+<link rel="stylesheet" href="__STATIC__/fun/css/style.css">
+
+<form class="layui-form" lay-filter="header">
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 标题
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="title" required lay-verify="required" autocomplete="off" class="layui-input" placeholder="标题">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            副标题
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="subhead" autocomplete="off" class="layui-input" placeholder="副标题">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="add" id="add">提交</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    layui.use(['form','layer'],function () {
+        var form = layui.form;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+        $(function () {
+            $.ajax({
+                url:"{:url('fun/header/headerBase')}",
+                success:function (resData) {
+                    if (resData.code === 200){
+                        var data = resData.data;
+                        form.val("header", {
+                            "title": data.title,
+                            "subhead" : data.subhead,
+                        });
+                    } else{
+                        layer.msg('数据查找失败',{icon:5,time:1000});
+                    }
+
+                }
+            })
+        });
+
+
+        form.on('submit(add)',function (obj) {
+            $(obj.elem).attr('disabled','disabled');
+            var data = obj.field;
+            var postData = {};
+            postData.title = data.title;
+            postData.subhead = data.subhead;
+
+            $.ajax({
+                type:'post',
+                url:"{:url('fun/header/header')}",
+                data:{"postData":JSON.stringify(postData)},
+                success:function (resData) {
+                    switch (resData.code) {
+                        case 200:
+                            layer.msg('修改成功',{icon:1,time:1000},function () {
+                                window.location.reload();
+                            });
+                            break;
+                        case 400:
+                            layer.msg(resData.msg,{icon:2,time:1000});
+                            break;
+                    }
+                    $(obj.elem).removeAttr('disabled')
+                }
+            })
+        })
+    })
+</script>

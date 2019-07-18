@@ -1,0 +1,61 @@
+
+<table id="dataTable" lay-filter="dataTable"></table>
+
+{include file="system@block/layui" /}
+
+<script type="text/html" id="toolbar">
+    <div class="hisi-table-tool"><a href="{:url('add')}" class="layui-btn layui-btn-normal layui-btn-sm">添加文档</a><a data-href="{:url('status', ['val' => 1])}" class="layui-btn hisi-page-btns layui-btn-sm" data-table="dataTable">启用</a><a data-href="{:url('status', ['val' => 0])}" class="layui-btn layui-btn-warm hisi-page-btns layui-btn-sm" data-table="dataTable">禁用</a><a data-href="{:url('del')}" class="layui-btn layui-btn-danger hisi-page-btns confirm layui-btn-sm">删除</a>
+    </div>
+</script>
+
+<script type="text/html" id="switchTpl">
+    <input type="checkbox" name="status" value="{{ d.status }}" lay-skin="switch" lay-filter="switchStatus" lay-text="开|关" {{ d.status == 1 ? 'checked' : '' }} data-href="{:url('status?table=api_doc')}?id={{ d.id }}">
+</script>
+
+<script type="text/html" id="buttonTpl">
+    <a href="{:config("module_api.formal_url")}/doc?id={{ d.id }}" target="_blank" class="layui-btn layui-btn-xs layui-btn-primary">预览</a>
+    <a href="{:url("edit")}?id={{ d.id }}&hisi_model=apiDoc" class="layui-btn layui-btn-xs layui-btn-normal">编辑</a>
+    <a href="{:url("del")}?id={{ d.id }}&table=api_doc" class="j-tr-del layui-btn layui-btn-xs layui-btn-danger">删除</a>
+</script>
+
+<script type="text/javascript">
+    layui.use(['table', 'jquery', 'layer'], function() {
+        var $ = layui.jquery, table = layui.table, layer = layui.layer;
+        table.render({
+            elem: '#dataTable'
+            ,url: '{:url()}'
+            ,page: true
+            ,text: {
+                none: '暂无相关数据'
+            }
+            ,toolbar: '#toolbar'
+            ,defaultToolbar: ['filter']
+            ,cols: [[ //表头
+                {type:'checkbox'}
+                ,{field: 'title', title: '文档标题', edit: 'text'}
+                ,{field: 'category', title: '文档分类',  width:100, templet: function(d) {
+                    return d.has_category.name;
+                }}
+                ,{field: 'sort', title: '排序', width: 100, edit: 'text'}
+                ,{field: 'views', title: '浏览', width: 100}
+                ,{field: 'status', title: '状态', templet:'#switchTpl', width: 120}
+                ,{title: '操作', templet: '#buttonTpl', width: 200}
+            ]]
+        });
+        table.on('edit(dataTable)', function(obj) {
+            var param = {}, url = '';
+            if (obj.field == 'title') {
+                param = {'title': obj.value, 'id': obj.data.id};
+                url = '{:url("edit")}?hisi_model=apiDoc&hisi_scene=true';
+            } else {
+                param = {'val': obj.value, 'id': obj.data.id};
+                url = '{:url("sort?table=api_doc")}';
+            }
+            $.post(url, param, function(res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg)
+                }
+            });
+        });
+    });
+</script>

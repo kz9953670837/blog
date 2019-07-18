@@ -1,0 +1,48 @@
+<meta name="referrer" content="never">
+<form class="layui-form" action="{:url('')}" method="post" id="editForm">
+    {if condition="input('param.api_id')"}
+        <input type="hidden" name="api_id" value="{:input('param.api_id')}" />
+    {else /}
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属接口：</label>
+        <div class="layui-input-inline">
+            <select name="api_id" type="select" class="field-api_id">
+                {volist name=":model('Api')->column('id,name')" id="vo"}
+                    <option value="{$key}">{$vo}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">错误码：</label>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input field-code" name="code" lay-verify="required" placeholder="[必填] 建议用http状态码开头[200,300,400,500]" />
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">错误说明：</label>
+        <div class="layui-input-inline">
+            <textarea name="desc" class="layui-textarea field-desc"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">解决方案：</label>
+        <div class="layui-input-inline">
+            <textarea name="solution" class="layui-textarea field-solution"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"> </label>
+        <div class="pop-bottom-bar hisi-footer">
+            <input type="hidden" class="field-id" name="id">
+            <button type="submit" class="layui-btn layui-btn-normal" hisi-data="{pop: true, refresh: true}" lay-submit="" lay-filter="formSubmit">提交保存</button>
+        </div>
+    </div>
+</form>
+{include file="system@block/layui" /}
+<script>
+    layui.use(['func'], function(){
+        layui.func.assign({:json_encode($formData)});
+    });
+</script>

@@ -1,0 +1,451 @@
+<?php 
+defined("IN_SYSTEM") or die("Access Denied");/* 防止模板被盗 */
+/*
+    友情提示：此页面升级会被覆盖，如有修改，记得备份。
+*/ 
+    $expPath = explode(':', $data['api_detail']['path']);
+?><!DOCTYPE html>
+<html>
+    <head>
+        <title>API文档</title>
+        <meta http-equiv=Content-Type content="text/html;charset=utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="__PUBLIC_JS__/layui/css/layui.css">
+        <link href="__CSS__/style.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        {include file="block/header" /}
+        <div class="main bgc-f mt20">
+            <div class="wiki-menu">
+                <div class="wiki-group" style="z-index:999">
+                    <div class="head">
+                        <span class="tit">版本</span>
+                        <i class="more"></i>
+                    </div>
+                    <ul class="group-items">
+                        {volist name="data['versions']" id="vo"}
+                            <li><a href="{:url('wiki/'.$vo.'/index')}" class="{if condition="$data['api_detail']['version'] eq $vo"}active{/if}">{$vo}</a></li>
+                        {/volist}
+                    </ul>
+                </div>
+                <div class="wiki-group">
+                    <div class="head">
+                        <span class="tit">目录</span>
+                        <i class="more"></i>
+                    </div>
+                    <ul class="group-items">
+                        {volist name="data['groups']" id="vo"}
+                        <li><a href="{:url('wiki/'.$data['params']['version'].'/index')}?cid={$vo['id']}" class="{if condition="$data['api_detail']['group_id'] eq $vo['id']"}active{/if}">{$vo['name']}</a></li>
+                        {/volist}
+                    </ul>
+                </div>
+                <ul class="wiki-items">
+                    {volist name="data['api_list']" id="vo"}
+                    <li class="{if condition="$data['api_detail']['id'] eq $vo['id']"}active{/if}">
+                        <a href="{:url('wiki/'.$vo['version'].'/'.$vo['route_map'])}?cid={$vo['group_id']}">
+                            <span>{$vo['name']}</span>
+                            <span class="h">{$vo['path']}</span>
+                        </a>
+                    </li>
+                    {/volist}
+                </ul>
+            </div>
+            <div class="wiki-main">
+                <fieldset class="layui-elem-field layui-field-title" style="margin:10px 0">
+                    <legend><strong>{$data['api_detail']['name']}</strong>（地址：/{$data['api_detail']['path']}）</legend>
+                </fieldset>
+                <div class="wiki-desc">
+                    请求类型：{$data['api_detail']['method']}
+                </div>
+                <div class="layui-collapse" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">公共参数</h2>
+                        <div class="layui-colla-content layui-show">
+                            <fieldset class="layui-elem-field layui-field-title">
+                                <legend>请求地址</legend>
+                            </fieldset>
+                            <table class="layui-table">
+                                <thead>
+                                    <tr>
+                                        <th width="80">环境</th>
+                                        <th>HTTP</th>
+                                        <th>HTTPS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>正式环境：</td>
+                                        <td>{:config('module_api.formal_url')}</td>
+                                        <td>{:str_replace('http', 'https', config('module_api.formal_url'))}</td>
+                                    </tr>
+                                    {if condition="config('module_api.sandbox_url')"}
+                                    <tr>
+                                        <td>沙箱环境：</td>
+                                        <td>{:config('module_api.sandbox_url')}</td>
+                                        <td>{:str_replace('http', 'https', config('module_api.sandbox_url'))}</td>
+                                    </tr>
+                                    {/if}
+                                </tbody>
+                            </table>
+                            <fieldset class="layui-elem-field layui-field-title mt20">
+                                <legend>请求头信息（header）</legend>
+                            </fieldset>
+                            <table class="layui-table">
+                                <thead>
+                                    <tr>
+                                        <th width="100">名称</th>
+                                        <th>类型</th>
+                                        <th>必须</th>
+                                        <th>默认</th>
+                                        <th>说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {volist name=":config('config.request_param')" id="vo"}
+                                        {if condition="($vo['name'] == 'Access-Token' && $data['api_detail']['access_token'] == 0) || ($vo['name'] == 'User-Token' && $data['api_detail']['user_token'] == 0)"}
+                                        {else /}
+                                            <tr>
+                                                <td>{$vo['name']}</td>
+                                                <td>{$vo['type']}</td>
+                                                <td>{$vo['is_must']}</td>
+                                                <td>{$vo['default']}</td>
+                                                <td>{$vo['desc']|raw}</td>
+                                            </tr>
+                                        {/if}
+                                    {/volist}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {if condition="$data['request_param']"}
+                    <div class="layui-collapse mt10" lay-filter="collapse">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">请求参数</h2>
+                            <div class="layui-colla-content layui-show">
+                                <table class="layui-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="80">名称</th>
+                                            <th>类型</th>
+                                            <th>必须</th>
+                                            <th>默认</th>
+                                            <th>说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {:request_param_tr($data['request_param'])}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {/if}
+                {if condition="$data['return_param']"}
+                <div class="layui-collapse mt10" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">返回参数</h2>
+                        <div class="layui-colla-content layui-show">
+                            <table class="layui-table">
+                                <thead>
+                                    <tr>
+                                        <th>名称</th>
+                                        <th width="80">类型</th>
+                                        <th width="120">示例值</th>
+                                        <th width="280">说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {:return_param_tr($data['return_param'])}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {/if}
+                <div class="layui-collapse mt10" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">请求示例</h2>
+                        <div class="layui-colla-content">
+                            <div class="layui-tab">
+                                <ul class="layui-tab-title">
+                                    <li class="layui-this">微信小程序</li>
+                                    <li>Javascript</li>
+                                    <li>PHP</li>
+                                </ul>
+                                <div class="layui-tab-content">
+                                    <div class="layui-tab-item layui-show">
+                                    <pre class="layui-code" lay-height="300px">
+    wx.request({
+        method: '{$data['api_detail']['method']}',
+        url: '{:config('module_api.formal_url')}/{$data['api_detail']['path']}',
+        {if condition="$data['request_param']"}data: {
+            {volist name="$data['request_param']" id="vo"}{if condition="$key gt 0"}, 
+            {/if}{$vo['name']}: '{$vo['desc']}'{/volist}
+
+        },
+        {/if}headers: {
+            {if condition="$data['api_detail']['user_token']"}'User-Token': '{:strtoupper(md5(time()))}',{/if}
+
+            'Timestamp': '{:date('Y-m-d H:i:s')}', 
+            {if condition="$data['api_detail']['access_token']"}'Access-Token': '{:strtoupper(md5(time()))}',{/if}
+       
+            'Format': 'json'
+        },
+        success:function(res) {
+            console.log(res)
+        }
+    })
+                                    </pre>
+                                    </div>
+                                    <div class="layui-tab-item">
+                                    <pre class="layui-code" lay-height="300px">
+    $.ajax({
+        type: '{$data['api_detail']['method']}',
+        url: '{:config('module_api.formal_url')}/{$data['api_detail']['path']}',
+        {if condition="$data['request_param']"}data: {
+            {volist name="$data['request_param']" id="vo"}{if condition="$key gt 0"}, 
+            {/if}{$vo['name']}: '{$vo['desc']}'{/volist}
+
+        },
+        {/if}headers: {
+            {if condition="$data['api_detail']['user_token']"}'User-Token': '{:strtoupper(md5(time()))}',{/if}
+
+            'Timestamp': '{:date('Y-m-d H:i:s')}', 
+            {if condition="$data['api_detail']['access_token']"}'Access-Token': '{:strtoupper(md5(time()))}',{/if}
+       
+            'Format': 'json'
+        },
+        success: function(res) {
+            console.log(res)
+        }
+    });
+                                    </pre>
+                                    </div>
+                                    <div class="layui-tab-item">
+                                    <pre class="layui-code" lay-height="300px">
+namespace app\index\home;
+
+use hisi\Http;
+use think\Controller;
+
+class Test extends Controller {
+    public function index()
+    {
+        $url = '{:config('module_api.formal_url')}/{$data['api_detail']['path']}';
+        $param = [];
+        {volist name="$data['request_param']" id="vo"}$param['{$vo['name']}'] = '{$vo['desc']}';
+        {/volist}$header = [
+            {if condition="$data['api_detail']['user_token']"}['User-Token' => '{:strtoupper(md5(time()))}'],{/if}
+
+            'Timestamp:{:date('Y-m-d H:i:s')}',
+            {if condition="$data['api_detail']['access_token']"}'Access-Token:{:strtoupper(md5(time()))}',{/if}
+
+            'Format:json',
+        ];
+
+        $result = Http::{:strtolower($data['api_detail']['method'])}($url, $param, $header);
+        print_r($result);
+    }
+}
+                                    </pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-collapse mt10" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">返回示例</h2>
+                        <div class="layui-colla-content">
+                            <div class="layui-tab">
+                                <ul class="layui-tab-title">
+                                    <li class="layui-this">JSON</li>
+                                    <li>XML</li>
+                                </ul>
+                                <div class="layui-tab-content">
+                                    <div class="layui-tab-item layui-show">
+                                        <pre class="layui-code" lay-height="300px">
+    {:json_encode(['code' => 0, 'message' => 'success', 'data' => $data['api_detail']['returnExampleArr']], JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT)}
+                                        </pre>
+                                    </div>
+                                    <div class="layui-tab-item">
+                                        <pre class="layui-code" lay-height="300px">
+    {:arrayToXml(['code' => 0, 'message' => 'success', 'data' => $data['api_detail']['returnExampleArr']])}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-collapse mt10" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">异常示例</h2>
+                        <div class="layui-colla-content">
+                            <div class="layui-tab">
+                            <ul class="layui-tab-title">
+                                <li class="layui-this">JSON</li>
+                                <li>XML</li>
+                            </ul>
+                            <div class="layui-tab-content">
+                                <div class="layui-tab-item layui-show">
+                                    <pre class="layui-code" lay-height="100px">
+{:json_encode($data['api_detail']['error'], JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT)}
+                                    </pre>
+                                </div>
+                                <div class="layui-tab-item">
+                                    <pre class="layui-code" lay-height="100px">
+{:arrayToXml($data['api_detail']['error'])}
+                                    </pre>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-collapse mt10" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">错误码解释</h2>
+                        <div class="layui-colla-content">
+                            <table class="layui-table">
+                                <thead>
+                                    <tr>
+                                        <th>错误码</th>
+                                        <th>错误消息</th>
+                                        <th>解决方案</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {volist name="$data['api_detail']['has_errors']" id="vo"}
+                                    <tr>
+                                        <th>{$vo['code']}</th>
+                                        <th>{$vo['desc']}</th>
+                                        <th>{$vo['solution']}</th>
+                                    </tr>
+                                    {/volist}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-collapse" style="margin:10px 0;" lay-filter="collapse">
+                    <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">API测试工具</h2>
+                        <div class="layui-colla-content">
+                            <form action="{:url('toolbox/test')}" class="layui-form" id="sandboxForm" method="post">
+                                <fieldset class="layui-elem-field layui-field-title">
+                                    <legend>请求头信息（header）</legend>
+                                </fieldset>
+                                <div class="layui-form-item sandbox-item">
+                                    <label class="layui-form-label">环境：</label>
+                                    <div class="layui-input-inline" style="width:300px;">
+                                        {if condition="config('module_api.sandbox_url')"}
+                                            <input type="radio" name="env" checked value="2" title="测试环境" />
+                                            <input type="radio" name="env" value="1" title="正式环境" />
+                                        {else /}
+                                            <input type="radio" name="env" checked value="1" title="正式环境" />
+                                        {/if}
+                                    </div>
+                                    <div class="layui-form-mid layui-word-aux"></div>
+                                </div>
+                                <div class="layui-form-item sandbox-item">
+                                    <label class="layui-form-label">接口地址：</label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" class="layui-input" name="path" autocomplete="off" placeholder="必填" value="/{$expPath[0]}" {if condition="!isset($expPath[1])"}readonly="true"{/if} />
+                                    </div>
+                                    <div class="layui-form-mid layui-word-aux">{if condition="isset($expPath[1])"}参考示例：/{$expPath[0]}<strong style="color:#f00">123</strong>，其中<strong style="color:#f00">123</strong>为数据ID{/if}</div>
+                                </div>
+                                {volist name=":config('config.request_param')" id="vo"}
+                                    {if condition="($vo['name'] == 'Access-Token' && $data['api_detail']['access_token'] == 0) || ($vo['name'] == 'User-Token' && $data['api_detail']['user_token'] == 0)"}
+                                    {else /}
+                                    <div class="layui-form-item sandbox-item">
+                                        <label class="layui-form-label">{$vo['name']}：</label>
+                                        <div class="layui-input-inline">
+                                            <input type="text" class="layui-input" name="head[{$vo['name']}]" autocomplete="off" placeholder="{$vo['is_must'] == '是' ? '必填' : '选填'}" value="{if condition="$vo['default']"}{$vo['default']}{elseif condition="$vo['name'] eq 'Access-Token'"}{:cookie('apiTestAccessToken')}{elseif condition="$vo['name'] eq 'Timestamp'"}{:date('Y-m-d H:i:s')}{else /}{/if}">
+                                        </div>
+                                        <div class="layui-form-mid layui-word-aux">
+                                            {$vo['desc']|raw}
+                                            {if condition="$vo['name'] eq 'Access-Token'"} <a href="{:url('toolbox/accessToken')}" id="getAccessToken" class="layui-badge layui-bg-blue">点此获取Access-Token</a>{/if}
+                                        </div>
+                                    </div>
+                                    {/if}
+                                {/volist}
+                                <fieldset class="layui-elem-field layui-field-title">
+                                    <legend>请求参数</legend>
+                                </fieldset>
+                                {:request_param_form($data['request_param'])}
+                                <div class="layui-form-item sandbox-item">
+                                    <label class="layui-form-label"> </label>
+                                    <div class="layui-input-inline">
+                                        <input type="hidden" name="api_id" value="{$data['api_detail']['id']}" />
+                                        <input type="submit" class="layui-btn layui-btn-normal" value="提交测试" />
+                                    </div>
+                                </div>
+                                <pre class="layui-code" id="sandboxCode" lay-title="接口响应" lay-height="500px" style="display:none;">
+                                </pre>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {include file="block/footer" /}
+<script type="text/Javascript">
+    layui.use(['element', 'layer', 'jquery', 'code', 'form'], function() {
+        var element = layui.element;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+        var form = layui.form;
+        layui.code({about: false, encode: true });
+        $('.childs').on('click', function(){
+            var that = $(this);
+            if (that.hasClass('childs-close')) {
+                that.removeClass('childs-close').addClass('childs-open');
+                $('.childs-level'+that.attr('data-id')).show();
+            } else {
+                that.removeClass('childs-open').addClass('childs-close');
+                $('.childs-level'+that.attr('data-id')).hide();
+            }
+        });
+
+        $('#sandboxForm').submit(function(){
+            var that = $(this);
+            $.post(that.attr('action'), that.serialize(), function(res) {
+                $('#sandboxCode').html(res).show();
+                layui.code({elem: '#sandboxCode', about: false, encode: true });
+            });
+            return false;
+        });
+
+        $('#getAccessToken').on('click', function() {
+            var that = $(this);
+            layer.open({
+                id: 'getAccessTokenPop',
+                title: '获取Access-Token',
+                btn: ['获取accessToken', '取消'],
+                btnAlign: 'l',
+                content: '<input type="text" value="2026668444" id="getAccessTokenAppId" class="layui-input" placeholder="请输入 AppId" /><input value="ZrIn80rRrNSRREirS9Rx0PrRUnnk7RXI" type="text" id="getAccessTokenAppSecret" class="layui-input mt10" placeholder="请输入 AppSecret" />',
+                yes: function(index, layerno) {
+                    $.post(that.attr('href'), {
+                            app_id: $('#getAccessTokenAppId').val(), 
+                            app_secret: $('#getAccessTokenAppSecret').val(),
+                            env: $('input[name="env"]:checked').val()
+                        }, function(res) {
+                            if (res.code == 0) {
+                                layer.msg(res.msg);
+                            } else {
+                                layer.closeAll();
+                                $('input[name="head[Access-Token]"]').val(res.data.data.access_token);
+                            }
+                    }, 'json');
+                }
+            });
+            return false;
+        });
+    });
+</script>
+    </body>
+</html>

@@ -1,0 +1,90 @@
+<meta name="referrer" content="never">
+<form class="layui-form" action="{:url('')}" method="post" id="editForm">
+    {if condition="input('param.api_id')"}
+        <input type="hidden" name="api_id" value="{:input('param.api_id')}" />
+    {else /}
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属接口：</label>
+        <div class="layui-input-inline">
+            <select name="api_id" type="select" class="field-api_id">
+                {volist name=":model('Api')->column('id,name')" id="vo"}
+                    <option value="{$key}">{$vo}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">参数名称：</label>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input field-name" name="name" lay-verify="required" placeholder="[必填] 字段名称" />
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">数据类型：</label>
+        <div class="layui-input-inline">
+            <select name="data_type" class="field-data_type" type="select">
+                <option value="string">String</option>
+                <option value="number">Integer</option>
+                <option value="array">Array</option>
+                <option value="multiArray">MultiArray</option>
+                <option value="object">Object</option>
+                <option value="float">Float</option>
+                <option value="boolean">Boolean</option>
+                <option value="file">File</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否必须：</label>
+        <div class="layui-input-inline w300">
+            <input type="radio" name="is_must" class="field-is_must" value="1" checked title="必填" />
+            <input type="radio" name="is_must" class="field-is_must" value="0" title="选填" />
+        </div>
+    </div>
+    {if condition="input('param.type') eq 1"}
+        <div class="layui-form-item">
+            <label class="layui-form-label"><a title="打开TP5手册" class="red" href="https://www.kancloud.cn/manual/thinkphp5/129356" target="_blank">验证规则：</a></label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input field-rule" name="rule" placeholder="[选填] 请参考TP5手册（验证-内置规则）" />
+            </div>
+        </div>
+    {/if}
+    {if condition="input('param.type')"}
+        <input type="hidden" name="type" value="{:input('param.type')}" />
+    {else /}
+        <div class="layui-form-item">
+            <label class="layui-form-label">参数类型：</label>
+            <div class="layui-input-inline w300">
+                <input type="radio" name="type" value="1" checked title="请求参数" />
+                <input type="radio" name="type" value="2" title="返回参数" />
+            </div>
+        </div>
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">参数默认值</label>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input field-value" name="value" placeholder="[选填] 默认值或示例值" />
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">参数说明：</label>
+        <div class="layui-input-inline">
+            <textarea name="desc" class="layui-textarea field-desc"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"> </label>
+        <div class="pop-bottom-bar hisi-footer">
+            <input type="hidden" class="field-id" name="id">
+            <input type="hidden" class="field-pid" name="pid" value="{:input('param.pid', 0)}">
+            <button type="submit" class="layui-btn layui-btn-normal" lay-submit="" hisi-data="{pop: true, refresh: true}" lay-filter="formSubmit">提交保存</button>
+        </div>
+    </div>
+</form>
+{include file="system@block/layui" /}
+<script>
+    layui.use(['func'], function(){
+        layui.func.assign({:json_encode($formData)});
+    });
+</script>

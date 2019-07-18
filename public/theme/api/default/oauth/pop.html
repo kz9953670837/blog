@@ -1,0 +1,89 @@
+<?php 
+defined("IN_SYSTEM") or die("Access Denied");
+/*
+	友情提示：此页面升级会被覆盖，如有修改，记得备份。
+*/ 
+?><!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="renderer" content="webkit">
+    	<link rel="stylesheet" href="__ADMIN_JS__/layui/css/layui.css">
+		<link href="__CSS__/style.css?v={:time()}" rel="stylesheet" type="text/css" />
+		<style type="text/css">
+			a{color:#20a0ff;}
+			.login-box{padding:50px 50px;margin:150px auto 0;border:1px solid #e5e5e5;background-color:#fff;width:700px;box-shadow: 0 0 20px 0 rgba(0,0,0,.05);position:relative;overflow:hidden;}
+			.login-box h4{display:block;width:300px;text-align:center;font-size:16px;}
+			.form-box{width:300px;margin:0 auto;padding:0 50px 0 0;float:left;border-right:1px dotted #eee;}
+			.form-item{position:relative;display:block;margin-top:15px;overflow:hidden;}
+			.form-item label{position:absolute;left:8px;top:0;height:38px;line-height:39px;color:#888;font-size:14px;}
+			.layui-input{padding-left:45px;font-size:14px;}
+			.layui-btn{width:100%;letter-spacing:2px;}
+			.logo{position:absolute;left:10px;top:10px;font-size:25px;color:#ddd;}
+			.layui-upload{cursor:pointer;}
+			.copyright{margin:20px auto;text-align:center;color:#ccc}
+			.auth-list{float:left;width:240px;overflow:hidden;margin-left:50px;padding:0 20px;}
+			.auth-list ul{}
+			.auth-list ul li{display:block;padding:8px 0;border-bottom:1px dotted #ddd;}
+			.footer-tips{width:100%;margin:20px auto;text-align:center;color:#999;}
+		</style>
+	</head>
+	<body>
+		<div class="login-box">
+			<div class="logo">{:config('base.site_name')}</div>
+			<form class="layui-form" action="{:url()}" id="loginForm">
+				<div class="form-box">
+					<h4>账号密码登录</h4>
+					<div class="form-item">
+						<label>账号：</label>
+						<input type="text" name="account" lay-verify="required" placeholder="请输入账号" class="layui-input">
+					</div>
+					<div class="form-item">
+						<label>密码：</label>
+						<input type="password" name="password" lay-verify="required" placeholder="请输入密码" class="layui-input">
+					</div>
+					<div class="form-item">
+						<a herf="" style="float:left;">忘记密码？</a>
+						<a herf="" style="float:right;">注册新账号</a>
+					</div>
+					<div class="form-item">
+						{:token()}
+						{volist name="$data['params']" id="vo"}
+							<input type="hidden" name="{$key}" value="{$vo}" />
+						{/volist}
+						<button type="submit" lay-submit="" class="layui-btn layui-btn-normal">登录并授权</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="footer-tips">
+			提示：为保障帐号安全，请认准本页URL地址必须以 {:input('server.SERVER_NAME')} 开头
+		</div>
+		<script src="__ADMIN_JS__/layui/layui.js"></script>
+		<script>
+			layui.use(['form', 'layer', 'jquery'], function(){
+				var form = layui.form;
+				var layer = layui.layer;
+				var $ = layui.jquery;
+				$('#loginForm').on('submit', function(){
+					var that = $(this), btn = that.find('button[type="submit"]');
+					btn.prop('disabled', true);
+					$.post(that.attr('action'), that.serialize(), function(res) {
+						if (res.code == 0) {
+							btn.removeClass('layui-btn-normal').addClass('layui-btn-danger').text(res.msg);
+							setTimeout(function() {
+								btn.removeClass("layui-btn-danger").addClass('layui-btn-normal').text('登录并授权').prop('disabled', false);
+							}, 3000);
+						} else {
+							btn.text(res.msg);
+							setTimeout(function() {
+								location.href = res.url;
+							}, 2000);
+						}
+					});
+					return false;
+				});
+			});
+		</script>
+	</body>
+</html>

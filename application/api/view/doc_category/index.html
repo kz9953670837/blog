@@ -1,0 +1,78 @@
+
+<table id="dataTable" lay-filter="dataTable"></table>
+
+{include file="system@block/layui" /}
+
+<script type="text/html" id="toolbar">
+    <div class="hisi-table-tool"><a href="{:url('add')}?hisi_model=apiDocCategory&hisi_scene=true" class="layui-btn layui-btn-normal layui-btn-sm" id="J_add">添加分类</a></div>
+</script>
+
+<script type="text/html" id="switchTpl">
+    <input type="checkbox" name="status" value="{{ d.status }}" lay-skin="switch" lay-filter="switchStatus" lay-text="开|关" {{ d.status == 1 ? 'checked' : '' }} data-href="{:url('status?table=api_doc_category')}?id={{ d.id }}">
+</script>
+
+<script type="text/html" id="sortTpl">
+    <input type="text" class="layui-input j-ajax-input input-sort" onkeyup="value=value.replace(/[^\d]/g,'')" value="{{ d.sort }}" data-value="{{ d.sort }}" data-href="{:url('sort?table=api_doc_category')}?id={{ d.id }}">
+</script>
+
+<script type="text/html" id="buttonTpl">
+    <a href="{:url("del")}?id={{ d.id }}&table=api_doc_category" class="j-tr-del layui-btn layui-btn-xs layui-btn-danger">删除</a>
+</script>
+
+<script type="text/javascript">
+    layui.use(['table', 'jquery', 'layer'], function() {
+        var $ = layui.jquery, table = layui.table, layer = layui.layer;
+        table.render({
+            elem: '#dataTable'
+            ,url: '{:url()}'
+            ,page: false
+            ,text: {
+                none: '暂无相关数据'
+            }
+            ,toolbar: '#toolbar'
+            ,defaultToolbar: false
+            ,cols: [[ //表头
+                {field: 'name', title: '分类名称', edit: 'text', width:200}
+                ,{field: 'sort', title: '排序', width: 100, edit: 'text'}
+                ,{field: 'status', title: '状态', templet:'#switchTpl', width: 120}
+                ,{title: '操作', templet: '#buttonTpl', width: 200}
+            ]]
+        });
+
+        $('#J_add').on('click', function() {
+            var that = $(this);
+            layer.prompt({
+                title: '添加文档分类',
+            }, function(value, index, elem) {
+                $.post(that.attr('href'), {'name': value}, function(res) {
+                    layer.msg(res.msg);
+                    if (res.code == 1) {
+                        setTimeout(function(){
+                            layer.close(index);
+                            location.reload();
+                        }, 3000);
+                    }
+                });
+            });
+            $('.layui-layer-prompt .layui-layer-input').attr('placeholder', '请输入分类名称');
+            return false;
+        });
+
+
+        table.on('edit(dataTable)', function(obj) {
+            var param = {}, url = '';
+            if (obj.field == 'name') {
+                param = {'name': obj.value, 'id': obj.data.id};
+                url = '{:url("edit")}?hisi_model=apiDocCategory&hisi_scene=true';
+            } else {
+                param = {'val': obj.value, 'id': obj.data.id};
+                url = '{:url("sort?table=api_doc_category")}';
+            }
+            $.post(url, param, function(res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg)
+                }
+            });
+        });
+    });
+</script>

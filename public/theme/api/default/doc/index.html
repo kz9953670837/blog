@@ -1,0 +1,48 @@
+<?php 
+defined("IN_SYSTEM") or die("Access Denied");/* 防止模板被盗 */
+/*
+	友情提示：此页面升级会被覆盖，如有修改，记得备份。
+*/ 
+?><!DOCTYPE html>
+<html>
+	<head>
+		<title>开发文档</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="renderer" content="webkit">
+    	<link rel="stylesheet" href="__ADMIN_JS__/layui/css/layui.css">
+		<link href="__CSS__/style.css" rel="stylesheet" type="text/css" />
+		<style type="text/css">
+			pre{background-color:#f5f5f5;border:1px dotted #ccc;}
+		</style>
+	</head>
+	<body>
+		{include file="block/header" /}
+		<div class="main bgc-f mt20">
+			<ul class="doc-menu">
+				{volist name="$data['menu']" id="v"}
+					<li class="items">{$v['name']}</li>
+					{volist name="$v['has_docs']" id="vv"}
+						<li><a href="?id={$vv['id']}" class="{if condition="input('get.id') eq $vv['id']"}active{/if}">- {$vv['title']}</a></li>
+					{/volist}
+				{/volist}
+				<li class="items">API文档</li>
+				{hisi:loop model="ApiGroup" where="['status' => 1]" field="id,name" order="sort desc"}
+				<li><a href="{:url('wiki/v1/index')}?cid={$r['id']}">- {$r['name']}</a></li>
+				{/hisi:loop}
+			</ul>
+			<div class="doc-main">
+				<div class="doc-title">
+					<h1>{$data['detail']['title']}</h1>
+					<span>更新日期：{:$data['detail']['mtime']}</span>
+				</div>
+				<div class="doc-detail pd20">{:htmlspecialchars_decode($data['detail']['content'])}</div>
+			</div>
+		</div>
+		{include file="block/footer" /}
+<script>
+	layui.use(['element'], function(){
+		var element = layui.element;
+	});
+</script>
+	</body>
+</html>

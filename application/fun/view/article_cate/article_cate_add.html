@@ -1,0 +1,29 @@
+{include file="system@block/layui" /}
+<link rel="stylesheet" href="__STATIC__/fun/css/style.css">
+
+<form class="layui-form" action="{:url('fun/articleCate/add')}" method="post">
+    <div class="layui-form-item">
+        <label class="layui-form-label layui-form-text">
+            <span class="layui-badge-dot"></span> 文章类别
+        </label>
+        <div class="layui-input-inline">
+            <input type="text" name="cate_name" required lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入文章类别">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label layui-form-text">
+            <span class="layui-badge-dot"></span> 排序
+        </label>
+        <div class="layui-input-inline">
+            <input type="text" name="sort" required lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入排序" value="0">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="submit" class="layui-btn layui-btn-normal" lay-submit="" lay-filter="formSubmit" hisi-data="{pop: true, refresh: true, jump: false, callback: null}">提交</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+        </div>
+    </div>
+</form>
+
+

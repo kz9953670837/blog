@@ -1,0 +1,118 @@
+{include file="system@block/layui" /}
+<link rel="stylesheet" href="__STATIC__/fun/css/style.css">
+
+<form class="layui-form" lay-filter="about">
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 标题
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="title" required lay-verify="required" autocomplete="off" class="layui-input" placeholder="标题">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 文章内容
+        </label>
+        <div class="layui-input-block block-add">
+            <textarea id="content" style="display: none;">
+
+            </textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="add" id="add">提交</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    layui.use(['form','layedit','layer'],function () {
+        var form = layui.form;
+        var layedit = layui.layedit;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+        //插入图片接口
+        layedit.set({
+            uploadImage:{
+                url: "{:url('fun/about/UploadImage')}",
+                type: 'post',
+                success:function (resData) {
+                    if (resData.code === 400){
+                        layer.msg(resData.msg,{icon:5,time:1000});
+                    }
+                }
+            }
+        });
+
+
+
+        //建立编辑器的核心方法
+        var index = layedit.build('content',{
+            tool: [
+                'italic', //斜体
+                'underline', //下划线
+                'del', //删除线
+                '|', //分割线
+                'left', //左对齐
+                'center', //居中对齐
+                'right', //右对齐
+                'link', //超链接
+                'unlink', //清除链接
+                'face', //表情
+                'image', //插入图片
+                'code',
+            ]
+        });
+
+        //初始化
+        $(function () {
+            $.ajax({
+                url:"{:url('fun/about/aboutBase')}",
+                success:function (resData) {
+                    if (resData.code === 200){
+                        var data = resData.data;
+                        form.val("about", {
+                            "title": data.title,
+                        });
+                        layedit.setContent(index,data.content);
+                    } else{
+                        layer.msg('查不着数据',{icon:5,time:1000});
+                    }
+
+                }
+            })
+        });
+
+        form.on('submit(add)', function(obj){
+            $(obj.elem).attr('disabled','disabled');
+            var data = obj.field;
+            var content = layedit.getContent(index);
+            var postData = {};
+            console.log(data);
+            postData.title = data.title;
+            postData.content = content;
+            $.ajax({
+                type:'post',
+                url: "{:url('fun/about/about')}",
+                data:{"postData":JSON.stringify(postData)},
+                success:function (resData) {
+                    switch (resData.code) {
+                        case 200:
+                            layer.msg('添加成功',{icon:1,time:1000},function () {
+                                window.location.reload();
+                            });
+                            break;
+                        case 400:
+                            layer.msg(resData.msg,{icon:2,time:1000});
+                            break;
+                    }
+                    $(obj.elem).removeAttr('disabled');
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    })
+</script>

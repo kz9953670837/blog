@@ -1,0 +1,21 @@
+<form class="layui-form layui-form-pane mt10" action="{:url('', ['hisi_model' => 'apiDocCategory'])}" method="post" id="editForm">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">分类名称：</label>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input field-name" name="name" lay-verify="required" placeholder="[必填] " />
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <input type="hidden" class="field-id" name="id">
+            <button type="submit" class="layui-btn layui-btn-normal" hisi-data="{pop: true, refresh: true}" lay-submit="" lay-filter="formSubmit">提交保存</button>
+        </div>
+    </div>
+</form>
+{include file="system@block/layui" /}
+<script>
+    layui.use(['func'], function(){
+        layui.func.assign({:json_encode($formData)});
+    });
+</script>

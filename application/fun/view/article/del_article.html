@@ -1,0 +1,146 @@
+{include file="system@block/layui" /}
+
+<form class="layui-form">
+    <div class="layui-form-item">
+        <div class="layui-input-inline">
+            <select name="article_cate" lay-search>
+                <option></option>
+            </select>
+        </div>
+        <div class="layui-input-inline">
+            <input type="text" name="title"  placeholder="文章标题" autocomplete="off" class="layui-input" maxlength="128">
+        </div>
+        <div class="layui-input-inline">
+            <button class="layui-btn" lay-submit lay-filter="search">搜索</button>
+        </div>
+    </div>
+</form>
+
+<table id="articleDel" lay-filter="articleDel"></table>
+
+<script>
+    layui.use(['table','layer','form'], function () {
+        var table = layui.table;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+        var form = layui.form;
+
+
+        var tableIns = table.render({
+            elem: '#articleDel',
+            url: "{:url('fun/article/delArticle')}", //数据接口
+            page: true,
+            cols: [[
+                {field: 'cate_name', title: '文章类别',width: '10%'},
+                {field: 'title', title: '文章标题',width: '60%'},
+                {field: 'author', title: '作者',width: '10%'},
+                {field: 'delete_time', title: '删除时间',width: '10%'},
+                {title: '操作', templet: '#operation',align:'center'},
+            ]],
+            response: {
+                statusCode: 200 //规定成功的状态码，默认：0
+            },
+            parseData: function (res) {
+                return {
+                    'code': res.code, //解析接口状态
+                    'count': res.total, //解析数据长度
+                    'data': res.data,
+                    'msg': res.msg,
+                };
+            },
+        });
+
+        //初始化搜索下拉框
+        $(function () {
+            $.ajax({
+                type:'post',
+                data:{"status":"add"},
+                url:"{:url('fun/article/articleBase')}",
+                success:function (resData) {
+                    if (resData.code === 200){
+                        var data = resData.data;
+                        var article_cate = $("select[name='article_cate']");
+                        for (let i = 0,len = data.length;i < len; i++){
+                            article_cate.append("<option value="+ data[i].id +">"+ data[i].cate_name +"</option>")
+                        }
+                        form.render('select');
+                    }
+                }
+            })
+        });
+
+        //操作栏
+        table.on('tool(articleDel)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'restore':
+                    layer.confirm('是否恢复',{icon: 3, title:'恢复'}, function(index){
+                        $.ajax({
+                            type:'post',
+                            url: "{:url('fun/article/articleRestore')}",
+                            data:{"id":data.id},
+                            success:function (resData) {
+                                switch (resData.code) {
+                                    case 200:
+                                        layer.msg('恢复成功',{icon:1,time:1000},function () {
+                                            obj.del();
+                                        });
+                                        break;
+                                    case 400:
+                                        layer.msg(resData.msg,{icon:2,time:1000});
+                                        break;
+                                }
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'delete':
+                    layer.confirm('是否彻底删除',{icon: 3, title:'删除'}, function(index){
+                        $.ajax({
+                            type:'delete',
+                            url: "{:url('fun/article/articleTrashed')}",
+                            data:{"id":data.id},
+                            success:function (resData) {
+                                switch (resData.code) {
+                                    case 200:
+                                        layer.msg('删除成功',{icon:1,time:1000},function () {
+                                            obj.del();
+                                        });
+                                        break;
+                                    case 400:
+                                        layer.msg(resData.msg,{icon:2,time:1000});
+                                        break;
+                                }
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+
+        //表格重载
+        form.on('submit(search)', function(obj){
+            var data = obj.field;
+            tableIns.reload({
+                method: 'post',
+                page:{
+                    curr:1
+                },
+                where: {
+                    "title" : data.title,
+                    "article_cate_id" : data.article_cate,
+                },
+            });
+            return false;
+        });
+    })
+</script>
+
+
+<!--操作栏-->
+<script type="text/html" id="operation">
+    <button class="layui-btn layui-btn-xs" lay-event="restore">恢复</button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">彻底删除</button>
+</script>

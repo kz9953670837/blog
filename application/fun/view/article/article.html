@@ -1,0 +1,160 @@
+{include file="system@block/layui" /}
+
+<form class="layui-form">
+    <div class="layui-form-item">
+        <div class="layui-input-inline">
+            <select name="article_cate" lay-search>
+                <option></option>
+            </select>
+        </div>
+        <div class="layui-input-inline">
+            <input type="text" name="title"  placeholder="文章标题" autocomplete="off" class="layui-input" maxlength="128">
+        </div>
+        <div class="layui-input-inline">
+            <button class="layui-btn" lay-submit lay-filter="search">搜索</button>
+        </div>
+    </div>
+</form>
+
+<table id="article" lay-filter="article"></table>
+
+
+<script>
+    layui.use(['table','layer','form'], function () {
+        var table = layui.table;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+        var form = layui.form;
+
+
+        var tableIns = table.render({
+            elem: '#article',
+            url: "{:url('fun/article/article')}", //数据接口
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter'],
+            page: true,
+            cols: [[
+                {field: 'cate_name', title: '文章类别',width: '10%'},
+                {field: 'title', title: '文章标题',width: '50%'},
+                {field: 'author', title: '作者',width: '10%'},
+                {field: 'is_top', title: '置顶',width: '10%',templet: '#checkIsTop'},
+                {field: 'sort', title: '排序',width: '10%'},
+                {title: '操作', templet: '#operation',align:'center'},
+            ]],
+            response: {
+                statusCode: 200 //规定成功的状态码，默认：0
+            },
+            parseData: function (res) {
+                return {
+                    'code': res.code, //解析接口状态
+                    'count': res.total, //解析数据长度
+                    'data': res.data,
+                    'msg': res.msg,
+                };
+            },
+        });
+
+        //初始化搜索下拉框
+        $(function () {
+           $.ajax({
+               type:'post',
+               data:{"status":"add"},
+               url:"{:url('fun/article/articleBase')}",
+               success:function (resData) {
+                   if (resData.code === 200){
+                       var data = resData.data;
+                       var article_cate = $("select[name='article_cate']");
+                       for (let i = 0,len = data.length;i < len; i++){
+                           article_cate.append("<option value="+ data[i].id +">"+ data[i].cate_name +"</option>")
+                       }
+                       form.render('select');
+                   }
+               }
+           })
+        });
+
+        //头部
+        table.on('toolbar(article)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'add':
+                    layer.open({
+                        type: 2,
+                        title:'新增',
+                        content:"{:url('fun/article/articleAdd')}"+'?hisi_iframe=yes',
+                        area: ['50%', '75%'],
+                    });
+                    break;
+            }
+        });
+
+        //操作栏
+        table.on('tool(article)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title:'修改',
+                        content:"{:url('fun/article/articleEdit')}"+'?hisi_iframe=yes&id='+data.id,
+                        area: ['50%', '75%'],
+                    });
+                    break;
+                case 'delete':
+                    layer.confirm('是否删除',{icon: 3, title:'删除'}, function(index){
+                        $.ajax({
+                            type:'delete',
+                            url: "{:url('fun/article/articleDelete')}",
+                            data:{"id":data.id},
+                            success:function (resData) {
+                                switch (resData.code) {
+                                    case 200:
+                                        layer.msg('删除成功',{icon:1,time:1000},function () {
+                                            obj.del();
+                                        });
+                                        break;
+                                    case 400:
+                                        layer.msg(resData.msg,{icon:2,time:1000});
+                                        break;
+                                }
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+
+        //表格重载
+        form.on('submit(search)', function(obj){
+            var data = obj.field;
+            tableIns.reload({
+                method: 'post',
+                page:{
+                    curr:1
+                },
+                where: {
+                    "title" : data.title,
+                    "article_cate_id" : data.article_cate,
+                },
+            });
+            return false;
+        });
+    })
+</script>
+
+<!--操作栏的置顶-->
+<script type="text/html" id="checkIsTop">
+    <input type="checkbox" name="is_top" value="{{ d.is_top }}" lay-skin="switch"  lay-filter="switchStatus" lay-text="启用|禁用"  data-href="{:url('fun/article/editStatus')}?id={{ d.id }}"  {{ d.is_top == 1 ? 'checked' : '' }} >
+</script>
+
+<!--操作栏-->
+<script type="text/html" id="operation">
+    <button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="edit">修改</button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</button>
+</script>
+
+<!--头部工具栏-->
+<script type="text/html" id="toolbar">
+    <button class="layui-btn layui-btn-sm" lay-event="add">新增</button>
+</script>

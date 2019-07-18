@@ -1,0 +1,206 @@
+{include file="system@block/layui" /}
+<link rel="stylesheet" href="__STATIC__/fun/css/style.css">
+
+<form class="layui-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 文章类别
+        </label>
+        <div class="layui-input-inline">
+            <select name="article_cate" required lay-verify="required">
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 文章标题
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="title" required lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入文章标题">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 文章引言
+        </label>
+        <div class="layui-input-block block-add">
+            <textarea name="intro" placeholder="请输入文章引言" class="layui-textarea"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            引言图片
+        </label>
+        <div class="layui-input-block block-add">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn" id="selectFile">选择文件</button>
+                <button type="button" class="layui-btn layui-btn-warm" id="startUpload">开始上传</button>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            是否置顶
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="checkbox" name="is_top" lay-skin="switch" lay-text="开启|关闭" value="1">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            文章作者
+        </label>
+        <div class="layui-input-inline">
+            <input type="text" name="author" autocomplete="off" class="layui-input" placeholder="请输入作者">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            排序
+        </label>
+        <div class="layui-input-inline">
+            <input type="text" name="sort" autocomplete="off" class="layui-input" placeholder="请输入排序">
+        </div>
+        <div class="layui-form-mid layui-word-aux">默认排序为0</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 文章内容
+        </label>
+        <div class="layui-input-block block-add">
+            <textarea id="content" style="display: none;">
+
+            </textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="add" id="add">提交</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+        </div>
+    </div>
+</form>
+<script>
+    layui.use(['form','layer','layedit','upload'], function() {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var layedit = layui.layedit;
+        var upload = layui.upload;
+        var introImage;
+
+
+        $(function () {
+            $.ajax({
+                url:"{:url('fun/article/articleBase')}",
+                data:{"status":"add"},
+                success:function (resData) {
+                    var articleCate = resData.data;
+                    if (resData.code === 200){
+                        for (let i = 0, len = articleCate.length;i < len; i ++ ){
+                            $("select[name='article_cate']").append("<option value="+ articleCate[i].id +">"+ articleCate[i].cate_name +"</option>")
+                        }
+                        form.render('select');
+                    }else{
+                        layer.msg('查不着文章类别数据',{icon:5,time:1000});
+                    }
+                }
+            })
+        });
+
+
+        //选完文件后不自动上传
+        upload.render({
+            elem: '#selectFile',
+            url: "{:url('fun/article/introUploadImage')}",
+            auto: false,
+            size: 0,                 //设置图片上传的大小
+            accept: 'images',    //设定格式
+            acceptMime: 'images',   //只显示图片
+            bindAction: '#startUpload',
+            done: function(resData){
+                switch (resData.code) {
+                    case 200:
+                        layer.msg(resData.msg,{icon:6,time:1000},function () {
+                            introImage = resData.data.src;
+                        });
+                        break;
+                    case 400:
+                        layer.msg(resData.msg,{icon:5,time:1000});
+                        break;
+                }
+            }
+        });
+
+        //插入图片接口
+        layedit.set({
+            uploadImage:{
+                url: "{:url('fun/article/contentUploadImage')}",
+                type: 'post',
+                success:function (resData) {
+                    if (resData.code === 400){
+                        layer.msg(resData.msg,{icon:5,time:1000});
+                    }
+                }
+            }
+        });
+
+
+
+        //建立编辑器的核心方法
+        var index = layedit.build('content',{
+            tool: [
+                'strong', //加粗
+                'italic', //斜体
+                'underline', //下划线
+                'del', //删除线
+                '|', //分割线
+                'left', //左对齐
+                'center', //居中对齐
+                'right', //右对齐
+                'link', //超链接
+                'unlink', //清除链接
+                'face', //表情
+                'image', //插入图片
+                'code',
+            ]
+        });
+
+        form.on('submit(add)', function(obj){
+            $(obj.elem).attr('disabled','disabled');
+            var data = obj.field;
+            var content = layedit.getContent(index);
+            var postData = {};
+            postData.article_cate = data.article_cate;
+            postData.title = data.title;
+            postData.intro = data.intro;
+            postData.introImage = introImage;
+            postData.is_top = data.is_top;
+            postData.author = data.author;
+            postData.content = content;
+            postData.sort = data.sort
+            $.ajax({
+                type:'post',
+                url: "{:url('fun/article/articleAdd')}",
+                data:{"postData":JSON.stringify(postData)},
+                success:function (resData) {
+                    switch (resData.code) {
+                        case 200:
+                            layer.msg('添加成功',{icon:1,time:1000},function () {
+                                window.parent.location.reload();
+                                var index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);
+                            });
+                            break;
+                        case 400:
+                            layer.msg(resData.msg,{icon:2,time:1000},function () {
+                                $(obj.elem).removeAttr('disabled');
+                            });
+                            break;
+                    }
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    })
+
+</script>

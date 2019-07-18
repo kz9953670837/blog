@@ -1,0 +1,108 @@
+<style type="text/css">
+    .auth{width:100%;overflow:hidden;}
+    .auth dt{float:left;width:100%;overflow:hidden;margin-top:10px;}
+    .auth dd{float:left;width:100%;overflow:hidden;}
+
+</style>
+<form class="layui-form hisi-form" action="{:url('', ['hisi_model' => 'apiApp'])}" method="post" id="editForm">
+    <div class="layui-tab-item layui-show" title="基本信息">
+        <div class="layui-form-item">
+            <label class="layui-form-label">应用分组：</label>
+            <div class="layui-input-inline w300">
+                <select name="group_id" type="select" class="field-group_id">
+                    {volist name=":model('ApiAppGroup')->column('id,name')" id="vo"}
+                        <option value="{$key}">{$vo}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">应用名称：</label>
+            <div class="layui-input-inline w300">
+                <input type="text" class="layui-input field-name" name="name" lay-verify="required" placeholder="[必填] " />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">网站名称：</label>
+            <div class="layui-input-inline w300">
+                <input type="text" class="layui-input field-site_name" name="site_name" lay-verify="required" placeholder="[必填] " />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">网站地址：</label>
+            <div class="layui-input-inline w300">
+                <input type="text" class="layui-input field-site_domain" name="site_domain" lay-verify="required" placeholder="[必填] " />
+            </div>
+            <div class="layui-form-mid layui-word-aux">网站地址必须以http或https开头</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">授权回调：</label>
+            <div class="layui-input-inline w300">
+                <input type="text" class="layui-input field-callback_domain" name="callback_domain" lay-verify="required" placeholder="[必填] 请填写完整的回调地址" />
+            </div>
+            <div class="layui-form-mid layui-word-aux">授权回调地址必须以http或https开头</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">IP白名单：</label>
+            <div class="layui-input-inline w300">
+                <input type="text" class="layui-input field-whitelist" name="whitelist" placeholder="[选填] " />
+            </div>
+            <div class="layui-form-mid layui-word-aux">多个IP用英文逗号","隔开</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">AppId：</label>
+            <div class="layui-input-inline w300">
+                <input type="text" readonly class="layui-input field-app_id" name="app_id" value="{:rand(10000000, 99999999)}" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">AppSecret</label>
+            <div class="layui-input-inline w300">
+                <input type="text" readonly class="layui-input field-app_secret" name="app_secret" value="{:random(32, 0)}" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">应用描述：</label>
+            <div class="layui-input-inline w300">
+                <textarea name="desc" class="layui-textarea field-desc"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="layui-tab-item" style="padding-bottom:20px;" title="权限设置">
+        {volist name=":model('api/Api')->authList()" id="v"}
+            <div class="layui-collapse mt10" lay-filter="collapse">
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">版本：{$key}</h2>
+                    <div class="layui-colla-content layui-show">
+                        {volist name="v" id="vv"}
+                        <dl class="auth">
+                            <dt><strong>{$vv['name']}</strong></dt>
+                            <dd>
+                                {volist name="$vv['childs']" id="vvv"}
+                                    <input type="checkbox" name="auth[]" class="field-auth" value="{$vvv['id']}" title="{$vvv['name']}" lay-skin="primary" />
+                                {/volist}
+                            </dd>
+                        </dl>
+                        {/volist}
+                    </div>
+                </div>
+            </div>
+        {/volist}
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <div class="pop-bottom-bar hisi-footer">
+                <input type="hidden" class="field-id" name="id">
+                <button type="submit" class="layui-btn layui-btn-normal" lay-submit="" lay-filter="formSubmit">提交保存</button>
+                <a href="{:url('index')}" class="layui-btn layui-btn-primary ml10">返回</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{include file="system@block/layui" /}
+<script>
+    layui.use(['func'], function(){
+        layui.func.assign({:json_encode($formData)});
+    });
+</script>

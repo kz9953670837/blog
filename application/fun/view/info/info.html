@@ -1,0 +1,182 @@
+{include file="system@block/layui" /}
+<link rel="stylesheet" href="__STATIC__/fun/css/style.css">
+
+<form class="layui-form" lay-filter="info">
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 关于我姓名
+        </label>
+        <div class="layui-input-inline">
+            <input type="text" name="info_name" required lay-verify="required" autocomplete="off" class="layui-input" placeholder="关于我自己姓名">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 关于我描述
+        </label>
+        <div class="layui-input-block block-add">
+            <textarea name="info_desc" placeholder="关于我自己描述" class="layui-textarea"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+             github地址
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="info_git" autocomplete="off" class="layui-input" placeholder="github地址">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            twitter地址
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="info_twitter" autocomplete="off" class="layui-input" placeholder="twitter地址">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            telegram地址
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="info_telegram" autocomplete="off" class="layui-input" placeholder="telegram地址">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            微博地址
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="info_weibo" autocomplete="off" class="layui-input" placeholder="微博地址">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            微信地址
+        </label>
+        <div class="layui-input-block block-add">
+            <input type="text" name="info_wechat" autocomplete="off" class="layui-input" placeholder="wechat地址">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">
+            <span class="layui-badge-dot"></span> 关于我头像
+        </label>
+        <div class="layui-input-block block-add">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn" id="selectFile">选择文件</button>
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" id="aboutImage">
+                    <p id="errorBtn"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="add" id="add">提交</button>
+        </div>
+    </div>
+</form>
+<script>
+    layui.use(['form','layer','upload'], function() {
+        var form = layui.form;
+        var layer = layui.layer;
+        var upload = layui.upload;
+        var $ = layui.jquery;
+        var uploadImage;
+
+
+        $(function () {
+            $.ajax({
+                url:"{:url('fun/info/infoBase')}",
+                success:function (resData) {
+                    var data = resData.data;
+                    form.val('info', {
+                        "info_name": data.info_name,
+                        "info_desc": data.info_desc,
+                        "info_git" : data.info_git,
+                        "info_twitter" : data.info_twitter,
+                        "info_telegram" : data.info_telegram,
+                        "info_weibo" : data.info_weibo,
+                        "info_wechat" : data.info_wechat,
+                    });
+                    uploadImage = data.info_image;
+                    $('#aboutImage').attr('src',  data.info_image);
+                }
+            })
+        });
+
+
+
+
+        //选完文件后不自动上传
+        var uploadInst  = upload.render({
+            elem: '#selectFile',
+            url: "{:url('fun/info/UploadImage')}",
+            size: 0,                 //设置图片上传的大小
+            accept: 'images',    //设定格式
+            acceptMime: 'images',   //只显示图片
+            choose: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    $('#aboutImage').attr('src', result); //图片链接（base64）
+                });
+            },
+            done: function(resData){
+                switch (resData.code) {
+                    case 200:
+                        layer.msg(resData.msg,{icon:6,time:1000},function () {
+                            uploadImage = resData.data.src;
+                        });
+                        break;
+                    case 400:
+                        layer.msg(resData.msg,{icon:5,time:1000});
+                        break;
+                }
+            },
+            error: function(){
+                //演示失败状态，并实现重传
+                var errorBtn = $('#errorBtn');
+                errorBtn.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                errorBtn.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        form.on('submit(add)', function(obj){
+            $(obj.elem).attr('disabled','disabled');
+            var data = obj.field;
+            var postData = {};
+            postData.info_name = data.info_name;
+            postData.info_desc = data.info_desc;
+            postData.info_image = uploadImage;
+            postData.info_git = data.info_git;
+            postData.info_twitter = data.info_twitter;
+            postData.info_telegram = data.info_telegram;
+            postData.info_weibo = data.info_weibo;
+            postData.info_wechat = data.info_wechat;
+            $.ajax({
+                type:'post',
+                data:{"postData":JSON.stringify(postData)},
+                url:"{:url('fun/info/info')}",
+                success:function (resData) {
+                    switch (resData.code) {
+                        case 200:
+                            layer.msg('修改成功',{icon:1,time:1000},function () {
+                                window.location.reload();
+                            });
+                            break;
+                        case 400:
+                            layer.msg(resData.msg,{icon:2,time:1000});
+
+                            break;
+                    }
+                    $(obj.elem).removeAttr('disabled');
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    })
+</script>

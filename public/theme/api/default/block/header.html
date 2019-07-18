@@ -1,0 +1,17 @@
+<?php defined("IN_SYSTEM") or die("Access Denied");/* 防止模板被盗 */?>
+<div class="topbar">
+	<div class="main">
+		<div class="logo">
+			<img src="{:config('module_api.logo')}" />
+		</div>
+<!-- 		<form action="#" method="get" class="topbar-form">
+			<input type="text" name="" class="topbar-form-input" placeholder="搜索开发文档或API文档" />
+		</form> -->
+		<ul class="topbar-nav">
+			<?php $contr = strtolower(request()->controller()); ?>
+			<li><a href="/" class="{if condition="$contr eq 'index'"}active{/if}">首页</a></li>
+			<li><a href="/doc" class="{if condition="$contr eq 'doc'"}active{/if}">开发文档</a></li>
+			<li><a href="/wiki" class="{if condition="$contr eq 'wiki'"}active{/if}">API文档</a></li>
+		</ul>
+	</div>
+</div>

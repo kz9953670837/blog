@@ -1,0 +1,59 @@
+<style type="text/css">
+    .layui-table-body{overflow:hidden;}
+    .tr-switch{cursor:pointer;}
+</style>
+
+<table id="dataTable" lay-filter="dataTable"></table>
+
+{include file="system@block/layui" /}
+
+<script type="text/html" id="toolbar">
+    <div class="hisi-table-tool"><a href="{:url('add', input('param.'))}" class="layui-btn layui-btn-normal layui-btn-sm hisi-iframe-pop" hisi-data="{width: '460px', height: '450px', title: '添加错误码'}">添加错误码</a><a data-href="{:url('status', ['val' => 1])}" class="layui-btn hisi-page-btns layui-btn-sm" data-table="dataTable">启用</a><a data-href="{:url('status', ['val' => 0])}" class="layui-btn layui-btn-warm hisi-page-btns layui-btn-sm" data-table="dataTable">禁用</a><a data-href="{:url('del')}" class="layui-btn layui-btn-danger hisi-page-btns confirm layui-btn-sm">删除</a>
+    </div>
+</script>
+
+<script type="text/html" id="statusTpl">
+    <input type="checkbox" name="status" value="{{ d.status }}" lay-skin="switch" lay-filter="switchStatus" lay-text="开|关" {{ d.status == 1 ? 'checked' : '' }} data-href="{:url('status')}?table=api_error_code&id={{ d.id }}">
+</script>
+
+<script type="text/html" id="sortTpl">
+    <input type="text" class="layui-input j-ajax-input input-sort" onkeyup="value=value.replace(/[^\d]/g,'')" value="{{ d.sort }}" data-value="{{ d.sort }}" data-href="{:url('sort?table=api_error_code')}?id={{ d.id }}">
+</script>
+
+<script type="text/html" id="buttonTpl">
+    <a href="{:url('edit')}?id={{ d.id }}&hisi_model=apiErrorCode&api_id={{ d.api_id }}&type={{ d.type }}" class="layui-btn layui-btn-xs layui-btn-normal hisi-iframe-pop" hisi-data="{width: '460px', height: '450px', title: '修改错误码'}" title="编辑错误码">编辑</a>
+    <a href="{:url('del')}?table=api_error_code&id={{ d.id }}" class="j-tr-del layui-btn layui-btn-xs layui-btn-danger">删除</a>
+</script>
+
+<script type="text/javascript">
+    layui.use(['table', 'jquery', 'laytpl'], function() {
+        var $ = layui.jquery, 
+            table = layui.table, 
+            ajaxUrl = '{:url('', input('param.'))}', 
+            laytpl = layui.laytpl,
+            form = layui.form;
+        table.render({
+            elem: '#dataTable'
+            ,url: ajaxUrl
+            ,page: true
+            ,text: {
+                none: '暂无相关数据'
+            }
+            ,toolbar: '#toolbar'
+            ,defaultToolbar: ['filter']
+            ,cols: [[ //表头
+                {type:'checkbox'}
+                ,{field: 'api', title: '所属接口', width: 120, templet:function(d) {
+                    if (!d.has_api) return '---';
+                    return d.has_api.name;
+                }}
+                ,{field: 'code', title: '错误码', width: 100}
+                ,{field: 'desc', title: '错误说明', width:200}
+                ,{field: 'solution', title: '解决方案'}
+                ,{field: 'sort', title: '排序', templet:'#sortTpl', width: 90}
+                ,{field: 'status', title: '状态', templet:'#statusTpl', width: 90}
+                ,{title: '操作', templet: '#buttonTpl', width: 120}
+            ]]
+        });
+    });
+</script>

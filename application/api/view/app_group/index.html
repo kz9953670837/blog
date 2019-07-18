@@ -1,0 +1,41 @@
+
+<table id="dataTable" lay-filter="dataTable"></table>
+
+{include file="system@block/layui" /}
+
+<script type="text/html" id="toolbar">
+    <div class="hisi-table-tool"><a href="{:url('add')}?hisi_model=apiAppGroup" class="layui-btn layui-btn-normal layui-btn-sm hisi-iframe-pop" hisi-data="{width: '400px', height: '280px', title: '添加应用分组'}">添加分组</a><a data-href="{:url('status', ['val' => 1, 'table' => 'api_app_group'])}" class="layui-btn hisi-page-btns layui-btn-sm" data-table="dataTable">启用</a><a data-href="{:url('status', ['val' => 0, 'table' => 'api_app_group'])}" class="layui-btn layui-btn-warm hisi-page-btns layui-btn-sm" data-table="dataTable">禁用</a><a data-href="{:url('del', ['table' => 'api_app_group'])}" class="layui-btn layui-btn-danger hisi-page-btns confirm layui-btn-sm">删除</a>
+    </div>
+</script>
+
+<script type="text/html" id="switchTpl">
+    <input type="checkbox" name="status" value="{{d.status}}" lay-skin="switch" lay-filter="switchStatus" lay-text="开|关" {{ d.status == 1 ? 'checked' : '' }} data-href="{:url('status?table=api_app_group')}?id={{ d.id }}">
+</script>
+
+<script type="text/html" id="buttonTpl">
+    <a href="{:url('edit')}?id={{ d.id }}&hisi_model=apiAppGroup" class="layui-btn layui-btn-xs layui-btn-normal hisi-iframe-pop" hisi-data="{width: '400px', height: '280px', title: '编辑分组'}">编辑</a>
+    <a href="{:url('del')}?id={{ d.id }}" class="j-tr-del layui-btn layui-btn-xs layui-btn-danger">删除</a>
+</script>
+
+<script type="text/javascript">
+    layui.use(['table', 'jquery'], function() {
+        var $ = layui.jquery, table = layui.table;
+        table.render({
+            elem: '#dataTable'
+            ,url: '{:url()}' //数据接口
+            ,page: true //开启分页
+            ,text: {
+                none: '暂无相关数据'
+            }
+            ,toolbar: '#toolbar'
+            ,defaultToolbar: false
+            ,cols: [[ //表头
+                {type:'checkbox'}
+                ,{field: 'name', title: '分组名称', width: 150}
+                ,{field: 'desc', title: '分组描述', width: 200}
+                ,{field: 'status', title: '分组状态', templet:'#switchTpl', width: 90}
+                ,{title: '操作', templet: '#buttonTpl', width: 120}
+            ]]
+        });
+    });
+</script>
